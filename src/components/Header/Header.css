@@ -1,0 +1,98 @@
+.App-header {
+  display: flex;
+  height: 80px;
+  background-color: #ffffff;
+  padding: 0 22px;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 26px;
+}
+
+.to-main-page {
+  display: flex;
+  align-items: center;
+  width: 147px;
+  height: 56px;
+  color: black;
+  background-color: #ffffff;
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+}
+
+.sign-in-sign-up-buttons {
+  display: flex;
+  justify-content: space-between;
+  width: 230px;
+}
+
+.sign-in-buttons,
+.sign-up-buttons {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 18px;
+  width: 109px;
+  height: 51px;
+  background-color: #ffffff;
+  border: none;
+  cursor: pointer;
+}
+
+.sign-in-buttons {
+  color: #1890ff;
+  border: 1px solid #1890ff;
+  border-radius: 5px;
+}
+
+.sign-up-buttons {
+  color: #52c41a;
+  border: 1px solid #52c41a;
+  border-radius: 5px;
+}
+
+.App-header__login {
+  display: flex;
+  align-items: center;
+  gap: 26px;
+}
+
+.App-header__login-create-article {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  width: 112px;
+  height: 31px;
+  color: #52c41a;
+  border: 1px solid #52c41a;
+  border-radius: 5px;
+}
+
+.App-header__login-user-name-avatar {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+}
+
+.App-header__login-user-name {
+  color: #000000d9;
+  font-size: 18px;
+}
+
+.App-header__login-user-avatar {
+  width: 46px;
+  height: 46px;
+}
+
+.App-header__login-logout {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #000000bf;
+  width: 109px;
+  height: 51px;
+  border: 1px solid #000000bf;
+  border-radius: 5px;
+  font-size: 18px;
+}

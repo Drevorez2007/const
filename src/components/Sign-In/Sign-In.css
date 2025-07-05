@@ -1,0 +1,111 @@
+.sign-in {
+  display: flex;
+  flex-direction: column;
+  align-self: center;
+  width: 384px;
+  height: 374px;
+  background-color: #ffffff;
+  border: 1px solid #d9d9d9;
+  border-radius: 6px;
+  box-shadow: 0px 4px 12px 0px rgba(34, 60, 80, 0.61);
+  margin-top: 59px;
+  padding: 48px 32px;
+  gap: 21px;
+}
+
+.sign-in__data {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.sign-in__data input {
+  font-size: 16px;
+  width: 320px;
+  height: 40px;
+  padding: 8px 12px;
+  color: black;
+  border: 1px solid #d9d9d9;
+  border-radius: 4px;
+}
+.sign-in__data input::placeholder {
+  color: #d9d9d9;
+}
+
+.sign-in__text {
+  display: flex;
+  justify-content: center;
+  font-size: 20px;
+  font-weight: 500;
+}
+
+.sign-in__email,
+.sign-in__password {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 14px;
+}
+
+.sign-in__personal-data input[type='checkbox'] {
+  appearance: none;
+  width: 20px;
+  height: 18px;
+  border: 1px solid #e8e8e8;
+  border-radius: 4px;
+  position: relative;
+  cursor: pointer;
+  background-color: #fff;
+}
+
+.sign-in__personal-data input[type='checkbox']:checked {
+  background-color: #1890ff;
+  border-color: #1890ff;
+}
+
+.sign-in__personal-data input[type='checkbox']:checked::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 5px;
+  width: 4px;
+  height: 8px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+.sign-in__create-acc {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 320px;
+  height: 68px;
+}
+.sign-in__create-acc-button {
+  width: 100%;
+  height: 40px;
+  background-color: #1890ff;
+  color: #ffffff;
+  cursor: pointer;
+}
+
+.sign-in__create-acc-info {
+  display: flex;
+  gap: 4px;
+  align-self: center;
+}
+
+.sign-in__create-acc-info-text {
+  color: #8c8c8c;
+}
+
+.sign-in__create-acc-info-sign-up {
+  color: #1890ff;
+  cursor: pointer;
+}
+
+.sign-in p {
+  align-self: flex-start;
+  margin-top: 5px;
+  color: red;
+}

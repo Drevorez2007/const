@@ -1,0 +1,74 @@
+.edit-profile {
+  display: flex;
+  flex-direction: column;
+  align-self: center;
+  width: 384px;
+  height: 498px;
+  background-color: #ffffff;
+  border: 1px solid #d9d9d9;
+  border-radius: 6px;
+  box-shadow: 0px 4px 12px 0px rgba(34, 60, 80, 0.61);
+  margin-top: 59px;
+  padding: 48px 32px;
+  gap: 21px;
+}
+
+.edit-profile__data {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.edit-profile__data input {
+  font-size: 16px;
+  width: 320px;
+  height: 40px;
+  padding: 8px 12px;
+  color: black;
+  border: 1px solid #d9d9d9;
+  border-radius: 4px;
+}
+.edit-profile__data input::placeholder {
+  color: #d9d9d9;
+}
+.edit-profile__text {
+  display: flex;
+  justify-content: center;
+  font-size: 20px;
+  font-weight: 500;
+}
+
+.edit-profile__user-name,
+.edit-profile__email,
+.edit-profile__password,
+.edit-profile__avatar {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 14px;
+}
+
+.edit-profile__create-acc {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 320px;
+  height: 68px;
+}
+.edit-profile__create-acc-button {
+  width: 100%;
+  height: 40px;
+  background-color: #1890ff;
+  color: #ffffff;
+}
+
+.edit-profile__create-acc-info {
+  display: flex;
+  gap: 4px;
+  align-self: center;
+}
+
+.edit-profile p {
+  align-self: flex-start;
+  margin-top: 5px;
+  color: red;
+}

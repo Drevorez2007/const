@@ -1,0 +1,121 @@
+.post {
+  display: flex;
+  flex-direction: column;
+  width: 938px;
+  min-height: 807px;
+  background-color: #ffffff;
+  border-radius: 5px;
+  box-shadow: 0px 4px 12px 0px rgba(34, 60, 80, 0.61);
+  padding-top: 15px;
+  padding-left: 16px;
+  align-self: center;
+}
+
+.post-up {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 25px;
+  padding-right: 14px;
+}
+.post-info {
+  display: flex;
+  width: 682px;
+  flex-direction: column;
+}
+
+.title-likes-info {
+  display: flex;
+  gap: 12px;
+}
+
+.title-text {
+  color: #1890ff;
+  font-size: 20px;
+  line-height: 28px;
+}
+
+.likes-button img {
+  width: 16px;
+  height: 16px;
+}
+.likes-button {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  cursor: pointer;
+}
+
+.post-tags-list-info {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.tag-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 38px;
+  height: 20px;
+  border: 1px solid rgba(0, 0, 0, 0.5);
+  border-radius: 2px;
+  padding: 2px 5px;
+}
+
+.post-text-info {
+  font-size: 12px;
+  line-height: 22px;
+  color: rgba(0, 0, 0, 0.5);
+}
+.user-info {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+.user-info__information {
+  display: flex;
+  flex-direction: row;
+  gap: 12px;
+}
+
+.user-name {
+  font-size: 28px;
+  line-height: 28px;
+}
+
+.data-create-post-item {
+  font-size: 12px;
+  color: rgba(0, 0, 0, 0.5);
+  line-height: 22px;
+}
+.user-avatar img {
+  width: 46px;
+  height: 46px;
+}
+.user-info__button {
+  display: flex;
+  gap: 12px;
+}
+.user-info__button .user-info__button-delete {
+  width: 78px;
+  height: 31px;
+  border: 1px solid #f5222d;
+  color: #f5222d;
+  border-radius: 5px;
+  cursor: pointer;
+  background-color: #ffffff;
+}
+.user-info__button-edit {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 65px;
+  height: 31px;
+  border: 1px solid #52c41a;
+  color: #52c41a;
+  border-radius: 5px;
+  cursor: pointer;
+}
+.post-down {
+  padding-right: 42px;
+}
