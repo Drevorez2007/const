@@ -1,7 +1,8 @@
-import { createAsyncThunk } from '@reduxjs/toolkit';
+import { createAsyncThunk } from "@reduxjs/toolkit";
+import { setLoading } from "../../global/globalSlice";
 
 export const editArticle = createAsyncThunk(
-  'articles/editArticle',
+  "articles/editArticle",
   async (
     { slug, title, description, body, tagList },
     { rejectWithValue, getState }
@@ -9,19 +10,22 @@ export const editArticle = createAsyncThunk(
     try {
       const state = getState();
       const token = state.user.currentUser.token;
-      console.log('Sending article data:', {
+      console.log("Sending article data:", {
         title,
         description,
         body,
         tagList: tagList,
       });
+
+      dispatch(setLoading(true));
+      
       const response = await fetch(
         `https://blog-platform.kata.academy/api/articles/${slug}`,
         {
-          method: 'PUT',
+          method: "PUT",
           headers: {
             Authorization: `Token ${token}`,
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
           },
           body: JSON.stringify({
             article: {
@@ -40,6 +44,8 @@ export const editArticle = createAsyncThunk(
       return data.article;
     } catch (error) {
       return rejectWithValue(error.message);
+    } finally {
+      dispatch(setLoading(false));
     }
   }
 );

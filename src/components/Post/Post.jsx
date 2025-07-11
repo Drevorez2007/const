@@ -1,42 +1,42 @@
-import React, { useEffect } from 'react';
-import { Link, useParams, useHistory } from 'react-router-dom';
-import { useSelector, useDispatch } from 'react-redux';
-import { getArticle } from '../store/article/getArticle/getArticleAction';
-import { format } from 'date-fns';
-import Markdown from 'react-markdown';
-import { deleteArticle } from '../store/article/getAllAndDelete/deleteArticleAction';
-import { Popconfirm, Button, Flex, Spin } from 'antd';
-import { LoadingOutlined } from '@ant-design/icons';
-import { favoritedLike } from '../store/article/favoritedLike/favoritedLikeAction';
-import './Post.css';
+import React, { useEffect } from "react";
+import { Link, useParams, useHistory } from "react-router-dom";
+import { useSelector, useDispatch } from "react-redux";
+import { getArticle } from "../store/article/getArticle/getArticleAction";
+import { format } from "date-fns";
+import Markdown from "react-markdown";
+import { deleteArticle } from "../store/article/getAllAndDelete/deleteArticleAction";
+import { Popconfirm, Button, Flex, Spin } from "antd";
+import { LoadingOutlined } from "@ant-design/icons";
+import { favoritedLike } from "../store/article/favoritedLike/favoritedLikeAction";
+import "./Post.css";
 
 const Post = () => {
   const history = useHistory();
   const dispatch = useDispatch();
   const { slug } = useParams();
-  const userLoaded = useSelector((state) => state.user.userLoaded);
+
   useEffect(() => {
-    if (!userLoaded) return;
     dispatch(getArticle({ slug }));
-  }, [dispatch, slug, userLoaded]);
+  }, [dispatch, slug]);
 
   const currentUser = useSelector((state) => state.user.currentUser);
   const article = useSelector((state) => state.getArticle);
+  const isLoading = useSelector((state) => state.global.isLoading);
+
   if (article.loading || !article.author) {
     return (
       <Flex
         align="center"
         gap="middle"
         justify="center"
-        style={{ marginTop: '100px' }}
+        style={{ marginTop: "100px" }}
       >
         <Spin indicator={<LoadingOutlined style={{ fontSize: 60 }} spin />} />
       </Flex>
     );
   }
+
   const { username, image } = article.author;
-
-
   const isAuthor = currentUser && currentUser.username === username;
 
   const {
@@ -48,31 +48,23 @@ const Post = () => {
     tagList,
     favorited,
   } = article;
-  const formatCreatedAt = format(new Date(createdAt), 'MMMM d, yyyy');
 
-  // УДАЛЕНИЕ СТАТЬИ
+  const formatCreatedAt = format(new Date(createdAt), "MMMM d, yyyy");
+
   const handleDelete = async () => {
     const result = await dispatch(deleteArticle({ slug }));
     if (deleteArticle.fulfilled.match(result)) {
-      history.push('/');
+      history.push("/");
     } else {
-      console.log('Ошибка при удалении статьи', result);
+      console.log("Ошибка при удалении статьи", result);
     }
   };
 
   const handleFavorite = () => {
     dispatch(favoritedLike({ slug, favorited }));
   };
-  return article.loading ? (
-    <Flex
-      align="center"
-      gap="middle"
-      justify="center"
-      style={{ marginTop: '100px' }}
-    >
-      <Spin indicator={<LoadingOutlined style={{ fontSize: 60 }} spin />} />
-    </Flex>
-  ) : (
+
+  return (
     <div className="post">
       <div className="post-up">
         <div className="post-info">
@@ -84,10 +76,10 @@ const Post = () => {
               disabled={!currentUser}
             >
               {favorited ? (
-                <img src="/Heart_like.svg" alt="" />
+                <img src="/Heart_like.svg" alt="liked" />
               ) : (
-                <img src="/heart1.svg" alt="" />
-              )}{' '}
+                <img src="/heart1.svg" alt="not liked" />
+              )}{" "}
               {favoritesCount}
             </button>
           </div>
@@ -104,13 +96,13 @@ const Post = () => {
           <div className="user-info__information">
             <div className="user-name-data-create-post-item">
               <div className="user-name">{username}</div>
-              <div className="data-create-post-item">{formatCreatedAt} </div>
+              <div className="data-create-post-item">{formatCreatedAt}</div>
             </div>
             <div className="user-avatar">
               <img src={image} alt="Фото Пользователя" />
             </div>
           </div>
-          {isAuthor ? (
+          {isAuthor && (
             <div className="user-info__button">
               <Popconfirm
                 title="Вы уверены, что хотите удалить статью?"
@@ -119,6 +111,7 @@ const Post = () => {
                 cancelText="Нет"
               >
                 <Button
+                  disabled={isLoading}
                   danger
                   type="primary"
                   className="user-info__button-delete"
@@ -133,8 +126,6 @@ const Post = () => {
                 Edit
               </Link>
             </div>
-          ) : (
-            ''
           )}
         </div>
       </div>

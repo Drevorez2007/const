@@ -1,7 +1,7 @@
-import React, { useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { useForm, Controller } from 'react-hook-form';
-import { useHistory } from 'react-router-dom';
+import React, { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { useForm, Controller } from "react-hook-form";
+import { useHistory } from "react-router-dom";
 import {
   setTitle,
   setDescription,
@@ -10,10 +10,11 @@ import {
   removeTag,
   setTagList,
   resetArticleForm,
-} from '../store/article/createAndEdit/createArticleReducer';
-import { createPost } from '../store/article/createAndEdit/createArticleAction';
+} from "../store/article/createAndEdit/createArticleReducer";
+import { createPost } from "../store/article/createAndEdit/createArticleAction";
 
-import './Create-Post.css';
+import "./Create-Post.css";
+
 const CreatePost = () => {
   const dispatch = useDispatch();
   const history = useHistory();
@@ -26,30 +27,30 @@ const CreatePost = () => {
     (state) => state.createArticle
   );
 
+  const isLoading = useSelector((state) => state.global.isLoading);
+
   useEffect(() => {
     dispatch(resetArticleForm());
   }, [dispatch]);
 
   const onSubmit = async () => {
-    const filteredTags = tagList.filter((tag) => tag.trim() !== '');
+    const filteredTags = tagList.filter((tag) => tag.trim() !== "");
     dispatch(setTagList(filteredTags));
     const result = await dispatch(createPost());
 
     if (createPost.fulfilled.match(result)) {
       history.push(`/`);
     } else {
-      console.log('Ошибка при обновлении статьи', result);
+      console.log("Ошибка при обновлении статьи", result);
     }
   };
-
 
   const handleAddTag = () => {
     const lastTag = tagList[tagList.length - 1];
-    if (lastTag && lastTag.trim() !== '') {
-      dispatch(addTag(''));
+    if (lastTag && lastTag.trim() !== "") {
+      dispatch(addTag(""));
     }
   };
-
 
   const handleTagChange = (index, value) => {
     const updateTags = [...tagList];
@@ -57,12 +58,12 @@ const CreatePost = () => {
     dispatch(setTagList(updateTags));
   };
 
-
   const handleRemoveTag = (index) => {
     if (tagList.length > 1) {
       dispatch(removeTag(index));
     }
   };
+
   return (
     <form className="create-post" onSubmit={handleSubmit(onSubmit)}>
       <div className="create-post__title">Create new article</div>
@@ -74,7 +75,7 @@ const CreatePost = () => {
             control={control}
             rules={{
               validate: (value) =>
-                (value && value.trim() !== '') || 'Title text is required',
+                (value && value.trim() !== "") || "Title text is required",
             }}
             render={({ field }) => (
               <input
@@ -97,8 +98,8 @@ const CreatePost = () => {
             control={control}
             rules={{
               validate: (value) =>
-                (value && value.trim() !== '') ||
-                'Description text is required',
+                (value && value.trim() !== "") ||
+                "Description text is required",
             }}
             render={({ field }) => (
               <textarea
@@ -123,7 +124,7 @@ const CreatePost = () => {
             control={control}
             rules={{
               validate: (value) =>
-                (value && value.trim() !== '') || 'Body text is required',
+                (value && value.trim() !== "") || "Body text is required",
             }}
             render={({ field }) => (
               <textarea
@@ -151,6 +152,7 @@ const CreatePost = () => {
                   className="create-post__tags-input"
                 />
                 <button
+                  disabled={isLoading}
                   className="create-post__tags-button-delete"
                   type="button"
                   onClick={() => handleRemoveTag(index)}
@@ -159,6 +161,7 @@ const CreatePost = () => {
                 </button>
                 {index === tagList.length - 1 && (
                   <button
+                    disabled={isLoading}
                     className="create-post__tags-button-add"
                     type="button"
                     onClick={() => handleAddTag()}
@@ -170,7 +173,11 @@ const CreatePost = () => {
             ))}
           </div>
         </div>
-        <button type="submit" className="create-post-send-button">
+        <button
+          disabled={isLoading}
+          type="submit"
+          className="create-post-send-button"
+        >
           Send
         </button>
       </div>

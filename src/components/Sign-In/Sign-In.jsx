@@ -1,14 +1,16 @@
-import React, { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { useDispatch } from 'react-redux';
-import { loginUser } from '../store/user/loginUserActions';
-import { useHistory, Link } from 'react-router-dom';
-import './Sign-In.css';
+import React, { useState } from "react";
+import { useForm } from "react-hook-form";
+import { useSelector, useDispatch } from "react-redux";
+import { loginUser } from "../store/user/loginUserActions";
+import { useHistory, Link } from "react-router-dom";
+import "./Sign-In.css";
 
 const SignIn = () => {
   const history = useHistory();
   const dispatch = useDispatch();
-  const [serverError, setServerError] = useState('');
+  const [serverError, setServerError] = useState("");
+  const isLoading = useSelector((state) => state.global.isLoading);
+
   const {
     register,
     handleSubmit,
@@ -17,9 +19,9 @@ const SignIn = () => {
   const onSubmit = async (data) => {
     const result = await dispatch(loginUser(data));
     if (loginUser.fulfilled.match(result)) {
-      history.push('/');
+      history.push("/");
     } else {
-      setServerError('Wrong password or Email');
+      setServerError("Wrong password or Email");
     }
   };
   return (
@@ -31,12 +33,12 @@ const SignIn = () => {
           <input
             type="email"
             placeholder="Email address"
-            onChange={() => setServerError('')}
-            {...register('email', {
-              required: 'Email is required',
+            onChange={() => setServerError("")}
+            {...register("email", {
+              required: "Email is required",
               pattern: {
                 value: /^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/,
-                message: 'Email must be valid',
+                message: "Email must be valid",
               },
             })}
           />
@@ -47,12 +49,12 @@ const SignIn = () => {
           <input
             type="text"
             placeholder="Password"
-            {...register('password', {
+            {...register("password", {
               required: true,
               minLength: 6,
               maxLength: 20,
             })}
-            onChange={() => setServerError('')}
+            onChange={() => setServerError("")}
           />
           {errors.password ? (
             <p className="error">Password must be (6-20) chars</p>
@@ -62,7 +64,9 @@ const SignIn = () => {
         </div>
       </div>
       <div className="sign-in__create-acc">
-        <button className="sign-in__create-acc-button">Login</button>
+        <button disabled={isLoading} className="sign-in__create-acc-button">
+          Login
+        </button>
         <div className="sign-in__create-acc-info">
           <div className="sign-in__create-acc-info-text">
             Don’t have an account?

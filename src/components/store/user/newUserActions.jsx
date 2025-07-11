@@ -1,27 +1,33 @@
-import { createAsyncThunk } from '@reduxjs/toolkit';
+import { createAsyncThunk } from "@reduxjs/toolkit";
+import { setLoading } from "../global/globalSlice";
 
 export const registerUser = createAsyncThunk(
-  'user/registerUser',
-  async (userData, { rejectWithValue }) => {
+  "user/registerUser",
+  async (userData, { rejectWithValue, dispatch }) => {
     try {
+      dispatch(setLoading(true));
+
       const response = await fetch(
-        'https://blog-platform.kata.academy/api/users',
+        "https://blog-platform.kata.academy/api/users",
         {
-          method: 'POST',
+          method: "POST",
           headers: {
-            'Content-type': 'application/json',
+            "Content-type": "application/json",
           },
           body: JSON.stringify(userData),
         }
       );
       const data = await response.json();
+
       if (!response.ok) {
-        return rejectWithValue(data.error);
+        return rejectWithValue(data.errors || { message: "Unknown error" });
       }
-      console.log('New acc sucsess created:', data);
+
       return data.user;
     } catch (error) {
-      return rejectWithValue(error.message);
+      return rejectWithValue({ message: error.message });
+    } finally {
+      dispatch(setLoading(false));
     }
   }
 );

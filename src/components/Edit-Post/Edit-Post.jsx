@@ -1,6 +1,6 @@
-import React, { useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { useForm, Controller } from 'react-hook-form';
+import React, { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { useForm, Controller } from "react-hook-form";
 import {
   setTitle,
   setDescription,
@@ -8,14 +8,14 @@ import {
   addTag,
   removeTag,
   setTagList,
-} from '../store/article/createAndEdit/createArticleReducer';
-import { useParams, useHistory } from 'react-router-dom';
-import { editArticle } from '../store/article/createAndEdit/editArticleAction';
-import { getArticle } from '../store/article/getArticle/getArticleAction';
-import { LoadingOutlined } from '@ant-design/icons';
-import { Flex, Spin } from 'antd';
+} from "../store/article/createAndEdit/createArticleReducer";
+import { useParams, useHistory } from "react-router-dom";
+import { editArticle } from "../store/article/createAndEdit/editArticleAction";
+import { getArticle } from "../store/article/getArticle/getArticleAction";
+import { LoadingOutlined } from "@ant-design/icons";
+import { Flex, Spin } from "antd";
 
-import './Edit-Post.css';
+import "./Edit-Post.css";
 
 const EditPost = () => {
   const dispatch = useDispatch();
@@ -25,6 +25,7 @@ const EditPost = () => {
     (state) => state.createArticle
   );
   const { loading } = useSelector((state) => state.getArticle);
+  const isLoading = useSelector((state) => state.global.isLoading);
   const {
     control,
     setValue,
@@ -41,20 +42,20 @@ const EditPost = () => {
   useEffect(() => {
     if (article) {
       const { title, description, body, tagList } = article;
-      setValue('title', title);
-      setValue('description', description);
-      setValue('body', body);
+      setValue("title", title);
+      setValue("description", description);
+      setValue("body", body);
 
       dispatch(setTitle(title));
       dispatch(setDescription(description));
       dispatch(setBody(body));
-      dispatch(setTagList(tagList.length > 0 ? tagList : ['']));
+      dispatch(setTagList(tagList.length > 0 ? tagList : [""]));
     }
   }, [article, dispatch, setValue]);
 
   // СНАЧАЛА ФИЛЬТРУЮ ТЕГИ
   const onSubmit = async () => {
-    const filteredTags = tagList.filter((tag) => tag.trim() !== '');
+    const filteredTags = tagList.filter((tag) => tag.trim() !== "");
     dispatch(setTagList(filteredTags));
 
     const result = await dispatch(
@@ -69,25 +70,22 @@ const EditPost = () => {
     if (editArticle.fulfilled.match(result)) {
       history.push(`/articles/${slug}`);
     } else {
-      console.log('Ошибка при обновлении статьи', result);
+      console.log("Ошибка при обновлении статьи", result);
     }
   };
-
 
   const handleAddTag = () => {
     const lastTag = tagList[tagList.length - 1];
-    if (lastTag && lastTag.trim() !== '') {
-      dispatch(addTag(''));
+    if (lastTag && lastTag.trim() !== "") {
+      dispatch(addTag(""));
     }
   };
-
 
   const handleTagChange = (index, value) => {
     const updateTags = [...tagList];
     updateTags[index] = value;
     dispatch(setTagList(updateTags));
   };
-
 
   const handleRemoveTag = (index) => {
     if (tagList.length > 1) {
@@ -99,7 +97,7 @@ const EditPost = () => {
       align="center"
       gap="middle"
       justify="center"
-      style={{ marginTop: '100px' }}
+      style={{ marginTop: "100px" }}
     >
       <Spin indicator={<LoadingOutlined style={{ fontSize: 60 }} spin />} />
     </Flex>
@@ -114,7 +112,7 @@ const EditPost = () => {
             control={control}
             rules={{
               validate: (value) =>
-                (value && value.trim() !== '') || 'Title text is required',
+                (value && value.trim() !== "") || "Title text is required",
             }}
             render={({ field }) => (
               <input
@@ -136,8 +134,8 @@ const EditPost = () => {
             control={control}
             rules={{
               validate: (value) =>
-                (value && value.trim() !== '') ||
-                'Description text is required',
+                (value && value.trim() !== "") ||
+                "Description text is required",
             }}
             render={({ field }) => (
               <textarea
@@ -161,7 +159,7 @@ const EditPost = () => {
             control={control}
             rules={{
               validate: (value) =>
-                (value && value.trim() !== '') || 'Body text is required',
+                (value && value.trim() !== "") || "Body text is required",
             }}
             render={({ field }) => (
               <textarea
@@ -188,6 +186,7 @@ const EditPost = () => {
                   className="edit-post__tags-input"
                 />
                 <button
+                  disabled={isLoading}
                   className="edit-post__tags-button-delete"
                   type="button"
                   onClick={() => handleRemoveTag(index)}
@@ -196,6 +195,7 @@ const EditPost = () => {
                 </button>
                 {index === tagList.length - 1 && (
                   <button
+                    disabled={isLoading}
                     className="edit-post__tags-button-add"
                     type="button"
                     onClick={() => handleAddTag()}
@@ -207,7 +207,11 @@ const EditPost = () => {
             ))}
           </div>
         </div>
-        <button type="submit" className="edit-post-send-button">
+        <button
+          disabled={isLoading}
+          type="submit"
+          className="edit-post-send-button"
+        >
           Send
         </button>
       </div>

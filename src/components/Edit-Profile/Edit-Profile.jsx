@@ -1,15 +1,16 @@
-import React, { useEffect } from 'react';
-import { useForm } from 'react-hook-form';
-import { editUser } from '../store/user/editUserAction';
-import { useSelector, useDispatch } from 'react-redux';
-import { useHistory } from 'react-router-dom';
+import React, { useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { editUser } from "../store/user/editUserAction";
+import { useSelector, useDispatch } from "react-redux";
+import { useHistory } from "react-router-dom";
 
-import './Edit-Profile.css';
+import "./Edit-Profile.css";
 
 const EditProfile = () => {
   const dispatch = useDispatch();
   const history = useHistory();
   const currentUser = useSelector((state) => state.user.currentUser);
+  const isLoading = useSelector((state) => state.global.isLoading);
   const {
     register,
     handleSubmit,
@@ -17,18 +18,16 @@ const EditProfile = () => {
     formState: { errors },
   } = useForm();
 
-
   useEffect(() => {
     if (currentUser) {
       reset({
         username: currentUser?.username,
         email: currentUser?.email,
-        password: '',
-        image: currentUser?.image || '',
+        password: "",
+        image: currentUser?.image || "",
       });
     }
   }, [currentUser, reset]);
-
 
   const onSubmit = async (data) => {
     if (!data.password) {
@@ -39,9 +38,9 @@ const EditProfile = () => {
     }
     const result = await dispatch(editUser(data));
     if (editUser.fulfilled.match(result)) {
-      history.push('/');
+      history.push("/");
     } else {
-      console.log('Ошибка при изменении профиля', result);
+      console.log("Ошибка при изменении профиля", result);
     }
   };
   if (!currentUser) {
@@ -56,7 +55,7 @@ const EditProfile = () => {
           <input
             type="text"
             placeholder="Username"
-            {...register('username', {
+            {...register("username", {
               required: true,
               minLength: 3,
               maxLength: 20,
@@ -71,7 +70,7 @@ const EditProfile = () => {
           <input
             type="email"
             placeholder="Email address"
-            {...register('email', { required: true })}
+            {...register("email", { required: true })}
           />
           {errors.email && <p className="error">Email must be valid</p>}
         </div>
@@ -80,7 +79,7 @@ const EditProfile = () => {
           <input
             type="text"
             placeholder="Password"
-            {...register('password', { minLength: 6, maxLength: 20 })}
+            {...register("password", { minLength: 6, maxLength: 20 })}
           />
           {errors.password && (
             <p className="error">Password must be valid (6–20 chars)</p>
@@ -91,22 +90,26 @@ const EditProfile = () => {
           <input
             type="text"
             placeholder="Avatar image"
-            {...register('image', {
+            {...register("image", {
               pattern: {
                 value: /^(https?:\/\/.*\.(?:png|jpg|jpeg|gif|svg))$/i,
-                message: 'Enter a valid image URL',
+                message: "Enter a valid image URL",
               },
             })}
           />
           {errors.image && (
             <p className="error">
-              {errors.image.message || 'Avatar is required'}
+              {errors.image.message || "Avatar is required"}
             </p>
           )}
         </div>
       </div>
       <div className="edit-profile__create-acc">
-        <button type="submit" className="edit-profile__create-acc-button">
+        <button
+          disabled={isLoading}
+          type="submit"
+          className="edit-profile__create-acc-button"
+        >
           Save
         </button>
       </div>

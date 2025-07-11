@@ -10,6 +10,8 @@ const Header = () => {
   const currentUser = useSelector((state) => state.user.currentUser);
   const username = currentUser?.username;
   const image = currentUser?.image;
+  const isLoading = useSelector((state) => state.global.isLoading);
+
   return (
     <div className="App-header">
       <Link className="to-main-page" to="/">
