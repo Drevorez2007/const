@@ -1,14 +1,14 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
-import {useSelector, useDispatch } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { Link } from "react-router-dom";
 import { registerUser } from "../store/user/newUserActions";
 import "./Sign-Up.css";
 
-
 const SignUp = () => {
   const dispatch = useDispatch();
   const [serverError, setServerError] = useState({});
+  const [isRegistered, setIsRegistered] = useState(false);
   const isLoading = useSelector((state) => state.global.isLoading);
 
   const {
@@ -31,14 +31,28 @@ const SignUp = () => {
     const action = await dispatch(registerUser(userData));
     if (registerUser.rejected.match(action)) {
       setServerError(action.payload);
+    } else {
+      setIsRegistered(true);
     }
   };
 
+  useEffect(() => {
+    if (isRegistered) {
+      const timer = setTimeout(() => {
+        setIsRegistered(false);
+      }, 4000);
+      return () => clearTimeout(timer);
+    }
+  }, [isRegistered]);
+
   return (
     <form className="sign-up" onSubmit={handleSubmit(onSubmit)}>
+      {isRegistered && (
+        <div className="success-message">✅ Вы успешно зарегистрированы!</div>
+      )}
+
       <div className="sing-up__data">
         <div className="sign-up__text">Create new account</div>
-
 
         <div className="sign-up__user-name">
           Username
@@ -64,7 +78,6 @@ const SignUp = () => {
           )}
         </div>
 
-
         <div className="sign-up__email">
           Email address
           <input
@@ -89,7 +102,6 @@ const SignUp = () => {
           )}
         </div>
 
-
         <div className="sign-up__password">
           Password
           <input
@@ -105,7 +117,6 @@ const SignUp = () => {
             <p className="error">Password must be valid (6–20 chars)</p>
           )}
         </div>
-
 
         <div className="sign-up__repeat-password">
           Repeat Password
@@ -123,7 +134,6 @@ const SignUp = () => {
         </div>
       </div>
 
-
       <div className="sign-up__personal-data">
         <div className="sign-up__personal-data-container">
           <input
@@ -137,10 +147,9 @@ const SignUp = () => {
         {errors.personaldata && <p className="error">Must be checked</p>}
       </div>
 
-
       <div className="sign-up__create-acc">
         <button
-        disabled={isLoading}
+          disabled={isLoading}
           type="submit"
           className="sign-up__create-acc-button"
         >
