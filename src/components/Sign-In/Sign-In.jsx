@@ -47,7 +47,7 @@ const SignIn = () => {
         <div className="sign-in__password">
           Password
           <input
-            type="text"
+            type="password" // ✅ Стало так
             placeholder="Password"
             {...register("password", {
               required: true,
