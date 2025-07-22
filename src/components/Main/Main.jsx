@@ -1,39 +1,48 @@
-import React, { useEffect } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
-import { Pagination } from 'antd';
-import { fetchArticles } from '../store/article/getAllAndDelete/articlesActions';
-import { setCurrentPage } from '../store/article/getAllAndDelete/articlesReducer';
-import PostItem from '../PostItem/PostItem';
-import { LoadingOutlined } from '@ant-design/icons';
-import { Flex, Spin } from 'antd';
-import './Main.css';
+import React, { useState, useEffect } from "react";
+import { useLocation, useHistory } from "react-router-dom";
+import { Pagination, Spin, Flex } from "antd";
+import { LoadingOutlined } from "@ant-design/icons";
+import { useGetArticlesQuery } from "../store/article/articleApi";
+import PostItem from "../PostItem/PostItem";
+import "./Main.css";
+
+
+function useQuery() {
+  return new URLSearchParams(useLocation().search);
+}
 
 const Main = () => {
-  const dispatch = useDispatch();
-  const { articles, loading, currentPage, articlesCount } = useSelector(
-    (state) => state.articles
-  );
-  const userLoaded = useSelector((state) => state.user.userLoaded);
+  const query = useQuery();
+  const history = useHistory();
 
-  const pageSize = 5;
-  const handlePageChange = (page) => {
-    dispatch(setCurrentPage(page));
-  };
+  const initialPage = parseInt(query.get("page")) || 1;
+  const initialPageSize = parseInt(query.get("limit")) || 5;
+
+  const [currentPage, setCurrentPage] = useState(initialPage);
+  const [pageSize, setPageSize] = useState(initialPageSize);
+  const offset = (currentPage - 1) * pageSize;
+
+  const { data, isLoading } = useGetArticlesQuery(
+    { limit: pageSize, offset },
+    { refetchOnMountOrArgChange: true },
+  );
 
   useEffect(() => {
-    const offset = (currentPage - 1) * pageSize;
-    dispatch(fetchArticles({ limit: pageSize, offset }));
-  }, [dispatch, currentPage, userLoaded]);
-  return loading ? (
-    <Flex
-      align="center"
-      gap="middle"
-      justify="center"
-      style={{ marginTop: '100px' }}
-    >
-      <Spin indicator={<LoadingOutlined style={{ fontSize: 60 }} spin />} />
-    </Flex>
-  ) : (
+    history.push(`/?page=${currentPage}&limit=${pageSize}`);
+  }, [currentPage, pageSize, history]);
+
+  if (isLoading) {
+    return (
+      <Flex align="center" justify="center" style={{ marginTop: "100px" }}>
+        <Spin indicator={<LoadingOutlined style={{ fontSize: 60 }} spin />} />
+      </Flex>
+    );
+  }
+
+  const articles = data?.articles || [];
+  const articlesCount = data?.articlesCount || 0;
+
+  return (
     <div className="main">
       <ul className="posts-list">
         {articles.map((article) => (
@@ -48,15 +57,21 @@ const Main = () => {
             description={article.description}
             tagList={article.tagList}
             favorited={article.favorited}
+            body={article.body}
           />
         ))}
       </ul>
       <Pagination
-        align="center"
         current={currentPage}
         total={articlesCount}
-        onChange={handlePageChange}
         pageSize={pageSize}
+        pageSizeOptions={["5", "10", "20"]}
+        showSizeChanger
+        onChange={(page, newSize) => {
+          setCurrentPage(page);
+          setPageSize(newSize);
+        }}
+        style={{ textAlign: "center", marginTop: 16 }}
       />
     </div>
   );

@@ -1,31 +1,25 @@
-import React, { useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import React, { useEffect, useState } from "react";
 import { useForm, Controller } from "react-hook-form";
-import {
-  setTitle,
-  setDescription,
-  setBody,
-  addTag,
-  removeTag,
-  setTagList,
-} from "../store/article/createAndEdit/createArticleReducer";
 import { useParams, useHistory } from "react-router-dom";
-import { editArticle } from "../store/article/createAndEdit/editArticleAction";
-import { getArticle } from "../store/article/getArticle/getArticleAction";
+import {
+  useGetArticleQuery,
+  useEditArticleMutation,
+} from "../store/article/articleApi";
+import { useSelector } from "react-redux";
 import { LoadingOutlined } from "@ant-design/icons";
 import { Flex, Spin } from "antd";
-
 import "./Edit-Post.css";
 
 const EditPost = () => {
-  const dispatch = useDispatch();
-  const history = useHistory();
   const { slug } = useParams();
-  const { title, description, body, tagList } = useSelector(
-    (state) => state.createArticle
-  );
-  const { loading } = useSelector((state) => state.getArticle);
-  const isLoading = useSelector((state) => state.global.isLoading);
+  const history = useHistory();
+
+  const { data, isLoading, isFetching } = useGetArticleQuery(slug);
+  const [editArticle, { isLoading: isSaving }] = useEditArticleMutation();
+
+  const currentUser = useSelector((state) => state.user.currentUser);
+  const article = data?.article;
+
   const {
     control,
     setValue,
@@ -33,75 +27,99 @@ const EditPost = () => {
     formState: { errors },
   } = useForm();
 
-  // ПОЛУЧАЮ ИМЕННО ТУ СТРАНИЦУ
-  useEffect(() => {
-    dispatch(getArticle({ slug }));
-  }, [dispatch, slug]);
-  const article = useSelector((state) => state.getArticle);
+  const [tagList, setTagList] = useState([""]);
 
   useEffect(() => {
     if (article) {
-      const { title, description, body, tagList } = article;
-      setValue("title", title);
-      setValue("description", description);
-      setValue("body", body);
-
-      dispatch(setTitle(title));
-      dispatch(setDescription(description));
-      dispatch(setBody(body));
-      dispatch(setTagList(tagList.length > 0 ? tagList : [""]));
+      setValue("title", article.title);
+      setValue("description", article.description);
+      setValue("body", article.body);
+      setTagList(article.tagList.length > 0 ? article.tagList : [""]);
     }
-  }, [article, dispatch, setValue]);
+  }, [article, setValue]);
 
-  // СНАЧАЛА ФИЛЬТРУЮ ТЕГИ
-  const onSubmit = async () => {
-    const filteredTags = tagList.filter((tag) => tag.trim() !== "");
-    dispatch(setTagList(filteredTags));
+  const isAuthor =
+    currentUser?.username && article?.author?.username
+      ? currentUser.username === article.author.username
+      : false;
 
-    const result = await dispatch(
-      editArticle({
-        slug,
-        title,
-        description,
-        body,
-        tagList: filteredTags,
-      })
-    );
-    if (editArticle.fulfilled.match(result)) {
-      history.push(`/articles/${slug}`);
+  const [showWarning, setShowWarning] = useState(false);
+
+  useEffect(() => {
+    if (!isFetching && !isAuthor) {
+      setShowWarning(true);
     } else {
-      console.log("Ошибка при обновлении статьи", result);
+      setShowWarning(false);
+    }
+  }, [isFetching, isAuthor]);
+
+  const onSubmit = async (formData) => {
+    const filteredTags = tagList.filter((tag) => tag.trim() !== "");
+    const updatedArticle = {
+      title: formData.title.trim(),
+      description: formData.description.trim(),
+      body: formData.body.trim(),
+      tagList: filteredTags.length > 0 ? filteredTags : ["general"],
+    };
+
+    try {
+      await editArticle({ slug, ...updatedArticle }).unwrap();
+      history.push(`/articles/${slug}`);
+    } catch (err) {
+      console.error("Ошибка при обновлении статьи", err);
     }
   };
 
   const handleAddTag = () => {
     const lastTag = tagList[tagList.length - 1];
-    if (lastTag && lastTag.trim() !== "") {
-      dispatch(addTag(""));
+    if (lastTag.trim() !== "") {
+      setTagList([...tagList, ""]);
     }
   };
 
   const handleTagChange = (index, value) => {
-    const updateTags = [...tagList];
-    updateTags[index] = value;
-    dispatch(setTagList(updateTags));
+    const updated = [...tagList];
+    updated[index] = value;
+    setTagList(updated);
   };
 
   const handleRemoveTag = (index) => {
     if (tagList.length > 1) {
-      dispatch(removeTag(index));
+      setTagList(tagList.filter((_, i) => i !== index));
     }
   };
-  return loading ? (
-    <Flex
-      align="center"
-      gap="middle"
-      justify="center"
-      style={{ marginTop: "100px" }}
-    >
-      <Spin indicator={<LoadingOutlined style={{ fontSize: 60 }} spin />} />
-    </Flex>
-  ) : (
+
+  if (isLoading) {
+    return (
+      <Flex
+        align="center"
+        gap="middle"
+        justify="center"
+        style={{ marginTop: "100px" }}
+      >
+        <Spin indicator={<LoadingOutlined style={{ fontSize: 60 }} spin />} />
+      </Flex>
+    );
+  }
+
+  if (showWarning) {
+    return (
+      <div className="edit-post__error">
+        <p className="edit-post__error-text">
+          ❌ You are not allowed to edit this article.
+        </p>
+        <button
+          onClick={() => history.push(`/articles/${slug}`)}
+          className="edit-post__error-button"
+          type="button"
+        >
+          Go back to article
+        </button>
+      </div>
+    );
+  }
+
+  return (
     <form className="edit-post" onSubmit={handleSubmit(onSubmit)}>
       <div className="edit-post__title">Edit article</div>
       <div className="edit-post__info">
@@ -114,19 +132,11 @@ const EditPost = () => {
               validate: (value) =>
                 (value && value.trim() !== "") || "Title text is required",
             }}
-            render={({ field }) => (
-              <input
-                {...field}
-                placeholder="Title"
-                onChange={(e) => {
-                  field.onChange(e);
-                  dispatch(setTitle(e.target.value));
-                }}
-              />
-            )}
+            render={({ field }) => <input {...field} placeholder="Title" />}
           />
           {errors.title && <p className="error">{errors.title.message}</p>}
         </div>
+
         <div className="edit-post__short-description">
           Short description
           <Controller
@@ -138,20 +148,14 @@ const EditPost = () => {
                 "Description text is required",
             }}
             render={({ field }) => (
-              <textarea
-                {...field}
-                placeholder="Title"
-                onChange={(e) => {
-                  field.onChange(e);
-                  dispatch(setDescription(e.target.value));
-                }}
-              />
+              <textarea {...field} placeholder="Short description" />
             )}
           />
           {errors.description && (
             <p className="error">{errors.description.message}</p>
           )}
         </div>
+
         <div className="edit-post__text">
           Text
           <Controller
@@ -161,19 +165,11 @@ const EditPost = () => {
               validate: (value) =>
                 (value && value.trim() !== "") || "Body text is required",
             }}
-            render={({ field }) => (
-              <textarea
-                {...field}
-                placeholder="Text"
-                onChange={(e) => {
-                  field.onChange(e);
-                  dispatch(setBody(e.target.value));
-                }}
-              />
-            )}
+            render={({ field }) => <textarea {...field} placeholder="Text" />}
           />
           {errors.body && <p className="error">{errors.body.message}</p>}
         </div>
+
         <div className="edit-post__tags">
           Tags
           <div className="edit-post__tags-list">
@@ -181,12 +177,12 @@ const EditPost = () => {
               <div key={index} className="edit-post__tags-item">
                 <input
                   type="text"
-                  value={tag}
+                  value={tag ?? ""}
                   onChange={(e) => handleTagChange(index, e.target.value)}
                   className="edit-post__tags-input"
                 />
                 <button
-                  disabled={isLoading}
+                  disabled={isSaving}
                   className="edit-post__tags-button-delete"
                   type="button"
                   onClick={() => handleRemoveTag(index)}
@@ -195,10 +191,10 @@ const EditPost = () => {
                 </button>
                 {index === tagList.length - 1 && (
                   <button
-                    disabled={isLoading}
+                    disabled={isSaving}
                     className="edit-post__tags-button-add"
                     type="button"
-                    onClick={() => handleAddTag()}
+                    onClick={handleAddTag}
                   >
                     Add tag
                   </button>
@@ -207,8 +203,9 @@ const EditPost = () => {
             ))}
           </div>
         </div>
+
         <button
-          disabled={isLoading}
+          disabled={isSaving}
           type="submit"
           className="edit-post-send-button"
         >

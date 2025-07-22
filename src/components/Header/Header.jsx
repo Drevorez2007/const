@@ -1,23 +1,26 @@
-import React from 'react';
-import { useSelector, useDispatch } from 'react-redux';
-import { Link } from 'react-router-dom';
-import { logout } from '../store/user/userReducer';
-import './Header.css';
+import React from "react";
+import { useSelector, useDispatch } from "react-redux";
+import { Link } from "react-router-dom";
+import { logout } from "../store/user/userReducer";
+import "./Header.css";
 
 const Header = () => {
   const dispatch = useDispatch();
-  const { isLogin } = useSelector((state) => state.user);
-  const currentUser = useSelector((state) => state.user.currentUser);
+  const currentUser = useSelector((state) => state.user.currentUser); 
   const username = currentUser?.username;
   const image = currentUser?.image;
-  const isLoading = useSelector((state) => state.global.isLoading);
+
+  const handleLogout = () => {
+    dispatch(logout()); 
+    localStorage.removeItem("user"); 
+  };
 
   return (
     <div className="App-header">
       <Link className="to-main-page" to="/">
         Realworld Blog
       </Link>
-      {isLogin ? (
+      {currentUser ? ( 
         <div className="App-header__login">
           <Link className="App-header__login-create-article" to="/new-article">
             Create article
@@ -31,15 +34,15 @@ const Header = () => {
             <Link to="/profile" className="App-header__login-user-avatar">
               <img
                 className="App-header__login-user-avatar"
-                src={image || '/user-avatar.png'}
+                src={image || "/user-avatar.png"}
                 alt="User Avatar"
-              ></img>
+              />
             </Link>
           </div>
           <Link
             className="App-header__login-logout"
             to="/"
-            onClick={() => dispatch(logout())}
+            onClick={handleLogout}
           >
             Log Out
           </Link>

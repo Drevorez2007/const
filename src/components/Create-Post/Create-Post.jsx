@@ -1,66 +1,59 @@
-import React, { useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import React, { useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { useHistory } from "react-router-dom";
-import {
-  setTitle,
-  setDescription,
-  setBody,
-  addTag,
-  removeTag,
-  setTagList,
-  resetArticleForm,
-} from "../store/article/createAndEdit/createArticleReducer";
-import { createPost } from "../store/article/createAndEdit/createArticleAction";
-
+import { useCreateArticleMutation } from "../store/article/articleApi";
 import "./Create-Post.css";
 
 const CreatePost = () => {
-  const dispatch = useDispatch();
   const history = useHistory();
+  const [tagList, setTagList] = useState([""]);
+
   const {
     control,
     handleSubmit,
     formState: { errors },
   } = useForm();
-  const { tagList, title, description, body } = useSelector(
-    (state) => state.createArticle
-  );
 
-  const isLoading = useSelector((state) => state.global.isLoading);
+  const [createArticle, { isLoading }] = useCreateArticleMutation();
 
-  useEffect(() => {
-    dispatch(resetArticleForm());
-  }, [dispatch]);
-
-  const onSubmit = async () => {
+  const onSubmit = async (data) => {
     const filteredTags = tagList.filter((tag) => tag.trim() !== "");
-    dispatch(setTagList(filteredTags));
-    const result = await dispatch(createPost());
+    const articleData = {
+      title: data.title.trim(),
+      description: data.description.trim(),
+      body: data.body.trim(),
+      tagList: filteredTags.length > 0 ? filteredTags : ["general"],
+    };
 
-    if (createPost.fulfilled.match(result)) {
-      history.push(`/`);
-    } else {
-      console.log("Ошибка при обновлении статьи", result);
+    try {
+      const response = await createArticle(articleData).unwrap();
+      const slug = response.article.slug;
+      if (slug) {
+        history.push(`/articles/${slug}`);
+      } else {
+        history.push("/");
+      }
+    } catch (err) {
+      console.error("Ошибка при создании статьи", err);
     }
   };
 
   const handleAddTag = () => {
     const lastTag = tagList[tagList.length - 1];
-    if (lastTag && lastTag.trim() !== "") {
-      dispatch(addTag(""));
+    if (lastTag.trim() !== "") {
+      setTagList([...tagList, ""]);
     }
   };
 
   const handleTagChange = (index, value) => {
-    const updateTags = [...tagList];
-    updateTags[index] = value;
-    dispatch(setTagList(updateTags));
+    const updated = [...tagList];
+    updated[index] = value;
+    setTagList(updated);
   };
 
   const handleRemoveTag = (index) => {
     if (tagList.length > 1) {
-      dispatch(removeTag(index));
+      setTagList(tagList.filter((_, i) => i !== index));
     }
   };
 
@@ -73,73 +66,51 @@ const CreatePost = () => {
           <Controller
             name="title"
             control={control}
+            defaultValue=""
             rules={{
               validate: (value) =>
                 (value && value.trim() !== "") || "Title text is required",
             }}
-            render={({ field }) => (
-              <input
-                {...field}
-                value={title}
-                placeholder="Title"
-                onChange={(e) => {
-                  field.onChange(e);
-                  dispatch(setTitle(e.target.value));
-                }}
-              />
-            )}
+            render={({ field }) => <input {...field} placeholder="Title" />}
           />
           {errors.title && <p className="error">{errors.title.message}</p>}
         </div>
+
         <div className="create-post__short-description">
           Short description
           <Controller
             name="description"
             control={control}
+            defaultValue=""
             rules={{
               validate: (value) =>
                 (value && value.trim() !== "") ||
                 "Description text is required",
             }}
             render={({ field }) => (
-              <textarea
-                {...field}
-                value={description}
-                placeholder="Title"
-                onChange={(e) => {
-                  field.onChange(e);
-                  dispatch(setDescription(e.target.value));
-                }}
-              />
+              <textarea {...field} placeholder="Short description" />
             )}
           />
           {errors.description && (
             <p className="error">{errors.description.message}</p>
           )}
         </div>
+
         <div className="create-post__text">
           Text
           <Controller
             name="body"
             control={control}
+            defaultValue=""
             rules={{
               validate: (value) =>
                 (value && value.trim() !== "") || "Body text is required",
             }}
-            render={({ field }) => (
-              <textarea
-                {...field}
-                value={body}
-                placeholder="Text"
-                onChange={(e) => {
-                  field.onChange(e);
-                  dispatch(setBody(e.target.value));
-                }}
-              />
-            )}
+            render={({ field }) => <textarea {...field} placeholder="Text" />}
           />
           {errors.body && <p className="error">{errors.body.message}</p>}
         </div>
+
         <div className="create-post__tags">
           Tags
           <div className="create-post__tags-list">
@@ -164,7 +135,7 @@ const CreatePost = () => {
                     disabled={isLoading}
                     className="create-post__tags-button-add"
                     type="button"
-                    onClick={() => handleAddTag()}
+                    onClick={handleAddTag}
                   >
                     Add tag
                   </button>
@@ -173,6 +144,7 @@ const CreatePost = () => {
             ))}
           </div>
         </div>
+
         <button
           disabled={isLoading}
           type="submit"

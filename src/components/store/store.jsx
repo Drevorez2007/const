@@ -1,18 +1,16 @@
 import { configureStore } from "@reduxjs/toolkit";
-import articlesReducer from "./article/getAllAndDelete/articlesReducer";
-import usersReducer from "./user/userReducer";
-import createArticleReducer from "./article/createAndEdit/createArticleReducer";
-import getArticleReducer from "./article/getArticle/getArticleReducer";
-import globalReducer from "./global/globalSlice";
+import { articleApi } from "./article/articleApi";
+import { userApi } from "./user/userApi";
+import userReducer from "./user/userReducer";
 
 const store = configureStore({
   reducer: {
-    articles: articlesReducer,
-    user: usersReducer,
-    createArticle: createArticleReducer,
-    getArticle: getArticleReducer,
-    global: globalReducer,
+    user: userReducer,
+    [articleApi.reducerPath]: articleApi.reducer,
+    [userApi.reducerPath]: userApi.reducer,
   },
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware().concat(articleApi.middleware, userApi.middleware),
 });
 
 export default store;

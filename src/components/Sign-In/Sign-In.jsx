@@ -1,33 +1,43 @@
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
-import { useSelector, useDispatch } from "react-redux";
-import { loginUser } from "../store/user/loginUserActions";
+import { useLoginMutation } from "../store/user/userApi";
+import { useDispatch } from "react-redux";
 import { useHistory, Link } from "react-router-dom";
+import { setUser } from "../store/user/userReducer";
+import { articleApi } from "../store/article/articleApi";
 import "./Sign-In.css";
 
 const SignIn = () => {
   const history = useHistory();
   const dispatch = useDispatch();
   const [serverError, setServerError] = useState("");
-  const isLoading = useSelector((state) => state.global.isLoading);
 
   const {
     register,
     handleSubmit,
     formState: { errors },
   } = useForm();
+
+  const [login, { isLoading }] = useLoginMutation();
+
   const onSubmit = async (data) => {
-    const result = await dispatch(loginUser(data));
-    if (loginUser.fulfilled.match(result)) {
+    try {
+      const response = await login({ user: data }).unwrap();
+      dispatch(setUser(response.user));
+      localStorage.setItem("user", JSON.stringify(response.user));
+
+      dispatch(articleApi.util.invalidateTags(["Articles"])); 
       history.push("/");
-    } else {
+    } catch (error) {
       setServerError("Wrong password or Email");
     }
   };
+
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="sign-in">
       <div className="sign-in__data">
         <div className="sign-in__text">Sign In</div>
+
         <div className="sign-in__email">
           Email address
           <input
@@ -42,12 +52,13 @@ const SignIn = () => {
               },
             })}
           />
-          {errors.email && <p className="error">Email must be valid</p>}
+          {errors.email && <p className="error">{errors.email.message}</p>}
         </div>
+
         <div className="sign-in__password">
           Password
           <input
-            type="password" 
+            type="password"
             placeholder="Password"
             {...register("password", {
               required: true,
@@ -57,12 +68,13 @@ const SignIn = () => {
             onChange={() => setServerError("")}
           />
           {errors.password ? (
-            <p className="error">Password must be (6-20) chars</p>
+            <p className="error">Password must be 6–20 characters</p>
           ) : serverError ? (
             <p className="error">{serverError}</p>
           ) : null}
         </div>
       </div>
+
       <div className="sign-in__create-acc">
         <button disabled={isLoading} className="sign-in__create-acc-button">
           Login

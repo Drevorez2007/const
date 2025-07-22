@@ -1,29 +1,27 @@
-import React, { useEffect } from "react";
 import { Link, useParams, useHistory } from "react-router-dom";
-import { useSelector, useDispatch } from "react-redux";
-import { getArticle } from "../store/article/getArticle/getArticleAction";
+import { useSelector } from "react-redux";
 import { format } from "date-fns";
 import Markdown from "react-markdown";
-import { deleteArticle } from "../store/article/getAllAndDelete/deleteArticleAction";
 import { Popconfirm, Button, Flex, Spin } from "antd";
 import { LoadingOutlined } from "@ant-design/icons";
-import { favoritedLike } from "../store/article/favoritedLike/favoritedLikeAction";
+import {
+  useDeleteArticleMutation,
+  useGetArticleQuery,
+  useToggleFavoriteMutation,
+} from "../store/article/articleApi";
 import "./Post.css";
 
 const Post = () => {
-  const history = useHistory();
-  const dispatch = useDispatch();
   const { slug } = useParams();
-
-  useEffect(() => {
-    dispatch(getArticle({ slug }));
-  }, [dispatch, slug]);
-
+  const history = useHistory();
   const currentUser = useSelector((state) => state.user.currentUser);
-  const article = useSelector((state) => state.getArticle);
-  const isLoading = useSelector((state) => state.global.isLoading);
 
-  if (article.loading || !article.author) {
+  const { data, isLoading: isFetching } = useGetArticleQuery(slug);
+  const article = data?.article;
+  const [deleteArticle, { isLoading: isDeleting }] = useDeleteArticleMutation();
+  const [toggleFavorite] = useToggleFavoriteMutation();
+
+  if (isFetching || !article?.author) {
     return (
       <Flex
         align="center"
@@ -36,9 +34,6 @@ const Post = () => {
     );
   }
 
-  const { username, image } = article.author;
-  const isAuthor = currentUser && currentUser.username === username;
-
   const {
     title,
     createdAt,
@@ -47,21 +42,23 @@ const Post = () => {
     body,
     tagList,
     favorited,
+    author: { username, image },
   } = article;
 
+  const isAuthor = currentUser?.username === username;
   const formatCreatedAt = format(new Date(createdAt), "MMMM d, yyyy");
 
   const handleDelete = async () => {
-    const result = await dispatch(deleteArticle({ slug }));
-    if (deleteArticle.fulfilled.match(result)) {
+    try {
+      await deleteArticle(slug).unwrap();
       history.push("/");
-    } else {
-      console.log("Ошибка при удалении статьи", result);
+    } catch (error) {
+      console.error("Ошибка при удалении статьи", error);
     }
   };
 
   const handleFavorite = () => {
-    dispatch(favoritedLike({ slug, favorited }));
+    toggleFavorite({ slug, favorited });
   };
 
   return (
@@ -111,7 +108,7 @@ const Post = () => {
                 cancelText="Нет"
               >
                 <Button
-                  disabled={isLoading}
+                  disabled={isDeleting}
                   danger
                   type="primary"
                   className="user-info__button-delete"

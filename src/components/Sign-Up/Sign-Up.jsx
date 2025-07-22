@@ -1,16 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { useSelector, useDispatch } from "react-redux";
 import { Link } from "react-router-dom";
-import { registerUser } from "../store/user/newUserActions";
+import { useRegisterMutation } from "../store/user/userApi";
 import "./Sign-Up.css";
 
 const SignUp = () => {
-  const dispatch = useDispatch();
   const [serverError, setServerError] = useState({});
   const [isRegistered, setIsRegistered] = useState(false);
-  const isLoading = useSelector((state) => state.global.isLoading);
-
   const {
     register,
     handleSubmit,
@@ -18,29 +14,32 @@ const SignUp = () => {
     formState: { errors },
   } = useForm();
 
+  const [registerUser, { isLoading }] = useRegisterMutation();
+
   const onSubmit = async (data) => {
     setServerError({});
+
     const userData = {
-      user: {
-        username: data.userName,
-        email: data.email,
-        password: data.password,
-      },
+      username: data.userName,
+      email: data.email,
+      password: data.password,
     };
 
-    const action = await dispatch(registerUser(userData));
-    if (registerUser.rejected.match(action)) {
-      setServerError(action.payload);
-    } else {
+    try {
+      await registerUser({ user: userData }).unwrap();
       setIsRegistered(true);
+    } catch (err) {
+      if (err?.data?.errors) {
+        setServerError(err.data.errors);
+      } else {
+        console.error("Unexpected registration error", err);
+      }
     }
   };
 
   useEffect(() => {
     if (isRegistered) {
-      const timer = setTimeout(() => {
-        setIsRegistered(false);
-      }, 4000);
+      const timer = setTimeout(() => setIsRegistered(false), 4000);
       return () => clearTimeout(timer);
     }
   }, [isRegistered]);

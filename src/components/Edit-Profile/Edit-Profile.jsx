@@ -1,28 +1,27 @@
 import React, { useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { editUser } from "../store/user/editUserAction";
-import { useSelector, useDispatch } from "react-redux";
+import { useSelector } from "react-redux";
 import { useHistory } from "react-router-dom";
-
+import { useUpdateUserMutation } from "../store/user/userApi";
 import "./Edit-Profile.css";
 
 const EditProfile = () => {
-  const dispatch = useDispatch();
   const history = useHistory();
   const currentUser = useSelector((state) => state.user.currentUser);
-  const isLoading = useSelector((state) => state.global.isLoading);
+  const [updateUser, { isLoading }] = useUpdateUserMutation();
+
   const {
     register,
-    handleSubmit,
     reset,
+    handleSubmit,
     formState: { errors },
   } = useForm();
 
   useEffect(() => {
     if (currentUser) {
       reset({
-        username: currentUser?.username,
-        email: currentUser?.email,
+        username: currentUser?.username || "",
+        email: currentUser?.email || "",
         password: "",
         image: currentUser?.image || "",
       });
@@ -30,26 +29,27 @@ const EditProfile = () => {
   }, [currentUser, reset]);
 
   const onSubmit = async (data) => {
-    if (!data.password) {
-      delete data.password;
-    }
-    if (!data.image) {
-      delete data.image;
-    }
-    const result = await dispatch(editUser(data));
-    if (editUser.fulfilled.match(result)) {
+    const cleanData = { ...data };
+    if (!cleanData.password) delete cleanData.password;
+    if (!cleanData.image) delete cleanData.image;
+
+    try {
+      await updateUser(cleanData).unwrap();
       history.push("/");
-    } else {
-      console.log("Ошибка при изменении профиля", result);
+    } catch (error) {
+      console.error("Ошибка при обновлении профиля", error);
     }
   };
+
   if (!currentUser) {
     return <div>LOADING...</div>;
   }
+
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="edit-profile">
       <div className="edit-profile__data">
         <div className="edit-profile__text">Edit Profile</div>
+
         <div className="edit-profile__user-name">
           Username
           <input
@@ -65,6 +65,7 @@ const EditProfile = () => {
             <p className="error">Username is required (3–20 chars)</p>
           )}
         </div>
+
         <div className="edit-profile__email">
           Email address
           <input
@@ -74,10 +75,11 @@ const EditProfile = () => {
           />
           {errors.email && <p className="error">Email must be valid</p>}
         </div>
+
         <div className="edit-profile__password">
           Password
           <input
-            type="text"
+            type="password"
             placeholder="Password"
             {...register("password", { minLength: 6, maxLength: 20 })}
           />
@@ -85,6 +87,7 @@ const EditProfile = () => {
             <p className="error">Password must be valid (6–20 chars)</p>
           )}
         </div>
+
         <div className="edit-profile__avatar">
           Avatar image (url)
           <input
@@ -104,6 +107,7 @@ const EditProfile = () => {
           )}
         </div>
       </div>
+
       <div className="edit-profile__create-acc">
         <button
           disabled={isLoading}

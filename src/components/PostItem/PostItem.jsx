@@ -1,10 +1,10 @@
-import React from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { Link } from 'react-router-dom';
-import { format } from 'date-fns';
-import { favoritedLike } from '../store/article/favoritedLike/favoritedLikeAction';
-import PropTypes from 'prop-types';
-import './PostItem.css';
+import React from "react";
+import { useSelector } from "react-redux";
+import { Link } from "react-router-dom";
+import { format } from "date-fns";
+import PropTypes from "prop-types";
+import { useToggleFavoriteMutation } from "../store/article/articleApi";
+import "./PostItem.css";
 
 const PostItem = ({
   title,
@@ -16,13 +16,21 @@ const PostItem = ({
   description,
   tagList,
   favorited,
+  body, 
 }) => {
-  const dispatch = useDispatch();
   const currentUser = useSelector((state) => state.user.currentUser);
-  const formatCreatedAt = format(new Date(createdAt), 'MMMM d, yyyy');
-  const handleFavorite = () => {
-    dispatch(favoritedLike({ slug, favorited }));
+  const formatCreatedAt = format(new Date(createdAt), "MMMM d, yyyy");
+  const [toggleFavorite, { isLoading }] = useToggleFavoriteMutation();
+
+  const handleFavorite = async () => {
+    if (!currentUser || isLoading) return;
+    try {
+      await toggleFavorite({ slug, favorited }).unwrap();
+    } catch (error) {
+      console.error("Ошибка при лайке:", error);
+    }
   };
+
   return (
     <li className="post-item">
       <div className="post-item-info">
@@ -33,12 +41,12 @@ const PostItem = ({
           <button
             className="likes-button"
             onClick={handleFavorite}
-            disabled={!currentUser}
+            disabled={!currentUser || isLoading}
           >
             {favorited ? (
-              <img src="/Heart_like.svg" alt="" />
+              <img src="/Heart_like.svg" alt="liked" />
             ) : (
-              <img src="/heart1.svg" alt="" />
+              <img src="/heart1.svg" alt="not liked" />
             )}
             {favoritesCount}
           </button>
@@ -51,11 +59,17 @@ const PostItem = ({
           ))}
         </ul>
         <div className="post-item-text-info">{description}</div>
+        {body && (
+          <div className="post-body-preview">
+            {body.slice(0, 200)}
+            {body.length > 200 && "..."}
+          </div>
+        )}
       </div>
       <div className="post-item__user-info">
         <div className="user-name-data-create-post-item">
           <div className="user-name">{userName}</div>
-          <div className="data-create-post-item">{formatCreatedAt} </div>
+          <div className="data-create-post-item">{formatCreatedAt}</div>
         </div>
         <div className="user-avatar">
           <img src={avatar} alt="Фото Пользователя" />
@@ -75,6 +89,7 @@ PostItem.propTypes = {
   description: PropTypes.string.isRequired,
   tagList: PropTypes.arrayOf(PropTypes.string).isRequired,
   favorited: PropTypes.bool.isRequired,
+  body: PropTypes.string,
 };
 
 export default PostItem;
